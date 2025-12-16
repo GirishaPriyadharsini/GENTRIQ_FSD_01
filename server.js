@@ -621,10 +621,16 @@ app.post('/api/registrations', authenticateToken, async (req, res) => {
         }
         
         const course = courses[0];
-        
-        if (course.current_students >= course.max_students) {
-            return res.status(400).json({ error: 'Course is full' });
+
+        const [countResult] = await db.promise().query(
+        'SELECT COUNT(*) AS count FROM registrations WHERE course_id = ? AND status = "registered"',
+        [course_id]
+        );
+
+        if (countResult[0].count >= course.max_students) {
+        return res.status(400).json({ error: 'Course is full' });
         }
+
         
         // Check if student is already registered
         const [existingReg] = await db.promise().query(
@@ -784,4 +790,5 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
 
