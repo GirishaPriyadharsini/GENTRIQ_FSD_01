@@ -1,8 +1,13 @@
-```md
+
 # Student Course Registration System
 
 A full-stack **Student Course Registration System** developed as part of my **Internship Project**.  
 This web application allows students to register for courses and enables administrators to manage users, courses, and registrations through a secure role-based system.
+
+## 📸 Screenshots
+
+### Home Page
+![Home Page](screenshots/home.png)
 
 
 ---
