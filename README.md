@@ -1,4 +1,3 @@
-```md
 # Student Course Registration System
 
 A full-stack **Student Course Registration System** developed as part of my **Internship Project**.  
