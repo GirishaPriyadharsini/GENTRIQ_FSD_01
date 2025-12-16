@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Student Registration System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        /* Header Styles */
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left h1 {
+            color: #2c3e50;
+            font-size: 20px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        /* Main Layout */
+        .container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            padding: 15px 30px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: #34495e;
+        }
+
+        .nav-item.active {
+            background: #34495e;
+            border-left-color: #3498db;
+            font-weight: 600;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .stat-icon.users { background: #e3f2fd; color: #1976d2; }
+        .stat-icon.courses { background: #f3e5f5; color: #7b1fa2; }
+        .stat-icon.registrations { background: #e8f5e8; color: #388e3c; }
+        .stat-icon.active { background: #fff3e0; color: #f57c00; }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Section Styles */
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f5f7fa;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219653;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        /* Status badges */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-dropped {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+
+            .nav-list {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+            }
+
+            .nav-item {
+                flex: 0 0 auto;
+                white-space: nowrap;
+                padding: 10px 20px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 10px 20px;
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <h1>Student Registration System Admin Dashboard</h1>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="user-name" id="userName">Loading...</div>
+                <div class="user-role">Administrator</div>
+            </div>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="nav-list">
+                <div class="nav-item active" data-section="dashboard">
+                    <i>📊</i> Dashboard
+                </div>
+                <div class="nav-item" data-section="courses">
+                    <i>📚</i> Courses
+                </div>
+                <div class="nav-item" data-section="users">
+                    <i>👥</i> Users
+                </div>
+                <div class="nav-item" data-section="registrations">
+                    <i>📝</i> Registrations
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="section">
+                <div class="section-header">
+                    <div class="section-title">System Overview</div>
+                </div>
+                
+                <!-- Stats Grid -->
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-icon users">👥</div>
+                        <div class="stat-value" id="totalStudents">0</div>
+                        <div class="stat-label">Total Students</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon courses">📚</div>
+                        <div class="stat-value" id="totalCourses">0</div>
+                        <div class="stat-label">Total Courses</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon registrations">📝</div>
+                        <div class="stat-value" id="activeRegistrations">0</div>
+                        <div class="stat-label">Active Registrations</div>
+                    </div>
+                </div>
+                
+                <!-- Recent Registrations -->
+                <div class="section">
+                    
+                    <div class="table-container">
+    
+                            <tbody id="recentRegistrationsBody">
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="loading" id="registrationsLoading"></div>
+                    <div class="empty-state" id="registrationsEmpty" style="display: none;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Courses Section -->
+            <div id="coursesSection" class="section" style="display: none;">
+                <div class="section-header">
+                    <div class="section-title">Course Management</div>
+                    <button class="btn btn-primary" id="addCourseBtn">Add New Course</button>
+                </div>
+                
+                <div class="table-container">
+                    <table id="coursesTable">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Title</th>
+                                <th>Instructor</th>
+                                <th>Department</th>
+                                <th>Credits</th>
+                                <th>Enrolled</th>
+                                <th>Max</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coursesTableBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="loading" id="coursesLoading">Loading courses...</div>
+                <div class="empty-state" id="coursesEmpty" style="display: none;">
+                    No courses found
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="usersSection" class="section" style="display: none;">
+                <div class="section-header">
+                    <div class="section-title">User Management</div>
+                    <button class="btn btn-primary" id="addUserBtn">Add New User</button>
+                </div>
+                
+                <div class="table-container">
+                    <table id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="loading" id="usersLoading">Loading users...</div>
+                <div class="empty-state" id="usersEmpty" style="display: none;">
+                    No users found
+                </div>
+            </div>
+
+            <!-- Registrations Section -->
+            <div id="registrationsSection" class="section" style="display: none;">
+                <div class="section-header">
+                    <div class="section-title">Registration Management</div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="allRegistrationsTable">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Course</th>
+                                <th>Registration Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allRegistrationsBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="loading" id="allRegistrationsLoading">Loading registrations...</div>
+                <div class="empty-state" id="allRegistrationsEmpty" style="display: none;">
+                    No registrations found
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add/Edit Course Modal -->
+    <div class="modal" id="courseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="courseModalTitle">Add New Course</h3>
+                <button class="btn" onclick="closeCourseModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="courseForm">
+                    <input type="hidden" id="courseId">
+                    <div class="form-group">
+                        <label for="courseCode">Course Code *</label>
+                        <input type="text" id="courseCode" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="courseTitle">Course Title *</label>
+                        <input type="text" id="courseTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="courseDescription">Description</label>
+                        <textarea id="courseDescription"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="courseInstructor">Instructor *</label>
+                        <input type="text" id="courseInstructor" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="courseDepartment">Department</label>
+                        <input type="text" id="courseDepartment">
+                    </div>
+                    <div class="form-group">
+                        <label for="courseCredits">Credits</label>
+                        <select id="courseCredits">
+                            <option value="1">1 Credit</option>
+                            <option value="2">2 Credits</option>
+                            <option value="3" selected>3 Credits</option>
+                            <option value="4">4 Credits</option>
+                            <option value="5">5 Credits</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="courseSchedule">Schedule</label>
+                        <input type="text" id="courseSchedule" placeholder="e.g., Mon/Wed 10:00-11:30">
+                    </div>
+                    <div class="form-group">
+                        <label for="courseMaxStudents">Max Students</label>
+                        <input type="number" id="courseMaxStudents" value="30" min="1">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeCourseModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCourse()">Save Course</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="userModalTitle">Add New User</h3>
+                <button class="btn" onclick="closeUserModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="userId">
+                    <div class="form-group">
+                        <label for="userFullName">Full Name *</label>
+                        <input type="text" id="userFullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userUsername">Username *</label>
+                        <input type="text" id="userUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userEmail">Email *</label>
+                        <input type="email" id="userEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userPassword">Password *</label>
+                        <input type="password" id="userPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userRole">Role *</label>
+                        <select id="userRole" required>
+                            <option value="student">Student</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeUserModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveUser()">Save User</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmModalTitle">Confirm Action</h3>
+                <button class="btn" onclick="closeConfirmModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmModalMessage">Are you sure you want to perform this action?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeConfirmModal()">Cancel</button>
+                <button class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentSection = 'dashboard';
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            checkAuth();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Load dashboard data
+            loadDashboardData();
+        });
+
+        // Authentication check
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            const userData = localStorage.getItem('user');
+            
+            if (!token || !userData) {
+                redirectToLogin();
+                return;
+            }
+            
+            try {
+                currentUser = JSON.parse(userData);
+                document.getElementById('userName').textContent = currentUser.full_name;
+                
+                // Verify token is still valid
+                const response = await fetch('/api/courses', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Invalid token');
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                redirectToLogin();
+            }
+        }
+
+        function redirectToLogin() {
+            window.location.href = 'admin.html';
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.dataset.section;
+                    switchSection(section);
+                });
+            });
+            
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                redirectToLogin();
+            });
+            
+            // Buttons
+            document.getElementById('addCourseBtn').addEventListener('click', openCourseModal);
+            document.getElementById('addUserBtn').addEventListener('click', openUserModal);
+        }
+
+        // Switch between sections
+        function switchSection(section) {
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.section === section) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Hide all sections
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('coursesSection').style.display = 'none';
+            document.getElementById('usersSection').style.display = 'none';
+            document.getElementById('registrationsSection').style.display = 'none';
+            
+            // Show selected section
+            document.getElementById(`${section}Section`).style.display = 'block';
+            currentSection = section;
+            
+            // Load section data
+            switch(section) {
+                case 'dashboard':
+                    loadDashboardData();
+                    break;
+                case 'courses':
+                    loadCourses();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'registrations':
+                    loadAllRegistrations();
+                    break;
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const token = localStorage.getItem('token');
+                
+                // Show loading state
+                document.getElementById('registrationsLoading').style.display = 'block';
+                document.getElementById('registrationsEmpty').style.display = 'none';
+                
+                // Load dashboard stats
+                const statsResponse = await fetch('/api/admin/dashboard-stats', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!statsResponse.ok) {
+                    throw new Error('Failed to load dashboard stats');
+                }
+                
+                const statsData = await statsResponse.json();
+                
+                if (statsData.success) {
+                    // Update stats
+                    document.getElementById('totalStudents').textContent = statsData.stats.totalStudents;
+                    document.getElementById('totalCourses').textContent = statsData.stats.totalCourses;
+                    document.getElementById('activeRegistrations').textContent = statsData.stats.activeRegistrations;
+                    
+                    // Load recent registrations separately
+                    await loadRecentRegistrations();
+                } else {
+                    throw new Error(statsData.error || 'Failed to load dashboard data');
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                document.getElementById('registrationsEmpty').style.display = 'block';
+                document.getElementById('registrationsEmpty').textContent = 'Error loading data';
+                document.getElementById('registrationsLoading').style.display = 'none';
+            }
+        }
+
+        // Load recent registrations
+        async function loadRecentRegistrations() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/admin/recent-registrations', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateRecentRegistrationsTable(data.registrations);
+                } else {
+                    throw new Error(data.error || 'Failed to load recent registrations');
+                }
+            } catch (error) {
+                console.error('Error loading recent registrations:', error);
+                document.getElementById('registrationsEmpty').style.display = 'block';
+                document.getElementById('registrationsEmpty').textContent = '';
+            } finally {
+                document.getElementById('registrationsLoading').style.display = 'none';
+            }
+        }
+
+        function updateRecentRegistrationsTable(registrations) {
+            const tbody = document.getElementById('recentRegistrationsBody');
+            const empty = document.getElementById('registrationsEmpty');
+            
+            tbody.innerHTML = '';
+            
+            if (!registrations || registrations.length === 0) {
+                empty.style.display = 'block';
+                empty.textContent = 'No registrations found';
+                return;
+            }
+            
+            registrations.forEach(reg => {
+                const row = document.createElement('tr');
+                const statusClass = reg.status === 'registered' ? 'status-active' : 'status-dropped';
+                const statusText = reg.status === 'registered' ? 'Registered' : 'Dropped';
+                
+                // Format date
+                const regDate = new Date(reg.registration_date);
+                const formattedDate = regDate.toLocaleDateString() + ' ' + regDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                row.innerHTML = `
+                    <td>
+                        <div><strong>${reg.student_name}</strong></div>
+                        <div style="font-size: 12px; color: #666;">${reg.student_email}</div>
+                    </td>
+                    <td>
+                        <div><strong>${reg.course_code}</strong></div>
+                        <div style="font-size: 12px; color: #666;">${reg.course_title}</div>
+                    </td>
+                    <td>${reg.instructor}</td>
+                    <td>${formattedDate}</td>
+                    <td>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            empty.style.display = 'none';
+        }
+
+        // Load courses
+        async function loadCourses() {
+            const loading = document.getElementById('coursesLoading');
+            const empty = document.getElementById('coursesEmpty');
+            const tbody = document.getElementById('coursesTableBody');
+            
+            loading.style.display = 'block';
+            empty.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/courses');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateCoursesTable(data.courses);
+                }
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                showError('Failed to load courses');
+                empty.style.display = 'block';
+                empty.textContent = 'Error loading courses';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function updateCoursesTable(courses) {
+            const tbody = document.getElementById('coursesTableBody');
+            const empty = document.getElementById('coursesEmpty');
+            
+            tbody.innerHTML = '';
+            
+            if (!courses || courses.length === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+            
+            courses.forEach(course => {
+                const isFull = course.enrolled_count >= course.max_students;
+                const enrollmentStatus = isFull ? 'Full' : 'Available';
+                const badgeClass = isFull ? 'badge-danger' : 'badge-success';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${course.course_code}</strong></td>
+                    <td>${course.title}</td>
+                    <td>${course.instructor}</td>
+                    <td>${course.department || 'N/A'}</td>
+                    <td>${course.credits}</td>
+                    <td>${course.enrolled_count || 0}</td>
+                    <td>${course.max_students}</td>
+                    <td>
+                        <span class="badge ${badgeClass}">${enrollmentStatus}</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="editCourse(${course.id})">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCourse(${course.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            empty.style.display = 'none';
+        }
+
+        // Course modal functions
+        function openCourseModal(courseId = null) {
+            const modal = document.getElementById('courseModal');
+            const title = document.getElementById('courseModalTitle');
+            const form = document.getElementById('courseForm');
+            
+            if (courseId) {
+                title.textContent = 'Edit Course';
+                loadCourseData(courseId);
+            } else {
+                title.textContent = 'Add New Course';
+                form.reset();
+                document.getElementById('courseId').value = '';
+            }
+            
+            modal.classList.add('show');
+        }
+
+        function closeCourseModal() {
+            document.getElementById('courseModal').classList.remove('show');
+        }
+
+        async function loadCourseData(courseId) {
+            try {
+                const response = await fetch(`/api/courses/${courseId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const course = data.course;
+                    document.getElementById('courseId').value = course.id;
+                    document.getElementById('courseCode').value = course.course_code;
+                    document.getElementById('courseTitle').value = course.title;
+                    document.getElementById('courseDescription').value = course.description || '';
+                    document.getElementById('courseInstructor').value = course.instructor;
+                    document.getElementById('courseDepartment').value = course.department || '';
+                    document.getElementById('courseCredits').value = course.credits;
+                    document.getElementById('courseSchedule').value = course.schedule || '';
+                    document.getElementById('courseMaxStudents').value = course.max_students;
+                }
+            } catch (error) {
+                console.error('Error loading course data:', error);
+                showError('Failed to load course data');
+            }
+        }
+
+        async function saveCourse() {
+            const courseId = document.getElementById('courseId').value;
+            const isEdit = !!courseId;
+            
+            const courseData = {
+                course_code: document.getElementById('courseCode').value.trim(),
+                title: document.getElementById('courseTitle').value.trim(),
+                description: document.getElementById('courseDescription').value.trim(),
+                instructor: document.getElementById('courseInstructor').value.trim(),
+                department: document.getElementById('courseDepartment').value.trim(),
+                credits: parseInt(document.getElementById('courseCredits').value),
+                schedule: document.getElementById('courseSchedule').value.trim(),
+                max_students: parseInt(document.getElementById('courseMaxStudents').value)
+            };
+            
+            // Validation
+            if (!courseData.course_code || !courseData.title || !courseData.instructor) {
+                showError('Please fill in all required fields');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const url = isEdit 
+                    ? `/api/admin/courses/${courseId}`
+                    : '/api/admin/courses';
+                
+                const response = await fetch(url, {
+                    method: isEdit ? 'PUT' : 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(courseData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeCourseModal();
+                    loadCourses();
+                    showSuccess(isEdit ? 'Course updated successfully' : 'Course created successfully');
+                } else {
+                    showError(data.error || 'Failed to save course');
+                }
+            } catch (error) {
+                console.error('Error saving course:', error);
+                showError('Failed to save course');
+            }
+        }
+
+        function editCourse(courseId) {
+            openCourseModal(courseId);
+        }
+
+        function deleteCourse(courseId) {
+            openConfirmModal(
+                'Delete Course',
+                'Are you sure you want to delete this course? This action cannot be undone.',
+                async () => {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch(`/api/admin/courses/${courseId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            showSuccess('Course deleted successfully');
+                            loadCourses();
+                        } else {
+                            showError(data.error || 'Failed to delete course');
+                        }
+                    } catch (error) {
+                        console.error('Error deleting course:', error);
+                        showError('Failed to delete course');
+                    }
+                }
+            );
+        }
+
+        // User management functions
+        async function loadUsers() {
+            const loading = document.getElementById('usersLoading');
+            const empty = document.getElementById('usersEmpty');
+            const tbody = document.getElementById('usersTableBody');
+            
+            loading.style.display = 'block';
+            empty.style.display = 'none';
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateUsersTable(data.users);
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showError('Failed to load users');
+                empty.style.display = 'block';
+                empty.textContent = 'Error loading users';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function updateUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            const empty = document.getElementById('usersEmpty');
+            
+            tbody.innerHTML = '';
+            
+            if (!users || users.length === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+            
+            users.forEach(user => {
+                const roleClass = user.role === 'admin' ? 'badge-warning' : 'badge-success';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.full_name}</td>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td><span class="badge ${roleClass}">${user.role}</span></td>
+                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="editUser(${user.id})">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            empty.style.display = 'none';
+        }
+
+        // User modal functions
+        function openUserModal(userId = null) {
+            const modal = document.getElementById('userModal');
+            const title = document.getElementById('userModalTitle');
+            const form = document.getElementById('userForm');
+            
+            if (userId) {
+                title.textContent = 'Edit User';
+                form.reset();
+                document.getElementById('userId').value = userId;
+                document.getElementById('userPassword').required = false;
+                // You would need to load user data here
+                // loadUserData(userId);
+            } else {
+                title.textContent = 'Add New User';
+                form.reset();
+                document.getElementById('userId').value = '';
+                document.getElementById('userPassword').required = true;
+            }
+            
+            modal.classList.add('show');
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.remove('show');
+        }
+
+        async function saveUser() {
+            const userId = document.getElementById('userId').value;
+            const isEdit = !!userId;
+            
+            const userData = {
+                full_name: document.getElementById('userFullName').value.trim(),
+                username: document.getElementById('userUsername').value.trim(),
+                email: document.getElementById('userEmail').value.trim(),
+                role: document.getElementById('userRole').value
+            };
+            if (!isEdit) {
+                userData.password = document.getElementById('userPassword').value;
+            }
+            
+            // Validation
+            if (!userData.full_name || !userData.username || !userData.email || !userData.role) {
+                showError('Please fill in all required fields');
+                return;
+            }
+            
+            if (!isEdit && !userData.password) {
+                showError('Password is required for new users');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const url = isEdit 
+                    ? `/api/admin/users/${userId}`
+                    : '/api/admin/users';
+                
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeUserModal();
+                    loadUsers();
+                    showSuccess(isEdit ? 'User updated successfully' : 'User created successfully');
+                } else {
+                    showError(data.error || 'Failed to save user');
+                }
+            } catch (error) {
+                console.error('Error saving user:', error);
+                showError('Failed to save user');
+            }
+        }
+
+        function editUser(userId) {
+            openUserModal(userId);
+        }
+
+        function deleteUser(userId) {
+            openConfirmModal(
+                'Delete User',
+                'Are you sure you want to delete this user? This action will delete all their data and cannot be undone.',
+                async () => {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch(`/api/admin/users/${userId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            showSuccess('User deleted successfully');
+                            loadUsers();
+                        } else {
+                            showError(data.error || 'Failed to delete user');
+                        }
+                    } catch (error) {
+                        console.error('Error deleting user:', error);
+                        showError('Failed to delete user');
+                    }
+                }
+            );
+        }
+
+        // Registration management
+        async function loadAllRegistrations() {
+            const loading = document.getElementById('allRegistrationsLoading');
+            const empty = document.getElementById('allRegistrationsEmpty');
+            const tbody = document.getElementById('allRegistrationsBody');
+            
+            loading.style.display = 'block';
+            empty.style.display = 'none';
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/admin/registrations', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateAllRegistrationsTable(data.registrations);
+                }
+            } catch (error) {
+                console.error('', error);
+                showError('Failed to load registrations');
+                empty.style.display = 'block';
+                empty.textContent = '';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function updateAllRegistrationsTable(registrations) {
+            const tbody = document.getElementById('allRegistrationsBody');
+            const empty = document.getElementById('allRegistrationsEmpty');
+            
+            tbody.innerHTML = '';
+            
+            if (!registrations || registrations.length === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+            
+            registrations.forEach(reg => {
+                const statusClass = reg.status === 'registered' ? 'badge-success' : 'badge-danger';
+                const statusText = reg.status === 'registered' ? 'Registered' : 'Dropped';
+                const regDate = new Date(reg.registration_date);
+                const formattedDate = regDate.toLocaleDateString() + ' ' + regDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div><strong>${reg.student_name}</strong></div>
+                        <div style="font-size: 12px; color: #666;">${reg.student_email}</div>
+                    </td>
+                    <td>
+                        <div><strong>${reg.course_code}</strong></div>
+                        <div style="font-size: 12px; color: #666;">${reg.course_title}</div>
+                    </td>
+                    <td>${formattedDate}</td>
+                    <td><span class="badge ${statusClass}">${statusText}</span></td>
+                    <td>
+                        ${reg.status === 'registered' 
+                            ? `<button class="btn btn-danger btn-sm" onclick="dropRegistration(${reg.id})">Drop</button>`
+                            : `<button class="btn btn-success btn-sm" onclick="reRegister(${reg.id})">Re-register</button>`
+                        }
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            empty.style.display = 'none';
+        }
+
+        async function dropRegistration(registrationId) {
+            await updateRegistrationStatus(registrationId, 'dropped');
+        }
+
+        async function reRegister(registrationId) {
+            await updateRegistrationStatus(registrationId, 'registered');
+        }
+
+        async function updateRegistrationStatus(registrationId, status) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/admin/registrations/${registrationId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess(`Registration ${status} successfully`);
+                    if (currentSection === 'dashboard') {
+                        loadDashboardData();
+                    } else {
+                        loadAllRegistrations();
+                    }
+                } else {
+                    showError(data.error || 'Failed to update registration');
+                }
+            } catch (error) {
+                console.error('Error updating registration:', error);
+                showError('Failed to update registration');
+            }
+        }
+
+        // Confirmation modal
+        function openConfirmModal(title, message, callback) {
+            document.getElementById('confirmModalTitle').textContent = title;
+            document.getElementById('confirmModalMessage').textContent = message;
+            
+            const confirmBtn = document.getElementById('confirmActionBtn');
+            confirmBtn.onclick = function() {
+                closeConfirmModal();
+                if (callback) callback();
+            };
+            
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+        }
+
+        // Notification functions
+        function showError(message) {
+            alert(`Error: ${message}`);
+        }
+
+        function showSuccess(message) {
+            alert(`Success: ${message}`);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Student Registration System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #4a00e0, #8e2de2);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <a href="#">
+                    <i class="fas fa-graduation-cap"></i>
+                    Student Registration System
+                </a>
+            </div>
+            <div class="user-info">
+                <span id="userFullName">Loading...</span>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Dashboard Cards -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h3>Today's Schedule</h3>
+                </div>
+                <div class="card-content" id="todaySchedule">
+                    <p>Loading today's classes...</p>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Quick Stats</h3>
+                </div>
+                <div class="card-content">
+                    <p>Registered Courses: <strong id="registeredCount">0</strong></p>
+                    <p>Available Courses: <strong id="availableCount">0</strong></p>
+                    <p>Next Class: <strong id="nextClassTime">None</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Message Container -->
+        <div id="alertContainer"></div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="courses">Available Courses</button>
+            <button class="tab" data-tab="my-courses">My Courses</button>
+            <button class="tab" data-tab="schedule">Class Schedule</button>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="spinner" id="loadingSpinner"></div>
+
+        <!-- Content Sections -->
+        <div id="courses-section" class="content-section active">
+            <div class="table-container">
+                <table id="coursesTable">
+                    <thead>
+                        <tr>
+                            <th>Course Code</th>
+                            <th>Title</th>
+                            <th>Instructor</th>
+                            <th>Credits</th>
+                            <th>Schedule</th>
+                            <th>Available Seats</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Courses will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="my-courses-section" class="content-section">
+            <div class="table-container">
+                <table id="myCoursesTable">
+                    <thead>
+                        <tr>
+                            <th>Course Code</th>
+                            <th>Title</th>
+                            <th>Instructor</th>
+                            <th>Status</th>
+                            <th>Registration Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Registered courses will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="schedule-section" class="content-section">
+            <div class="table-container">
+                <table id="scheduleTable">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Day</th>
+                            <th>Time</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Schedule will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+            // Global variables
+    let currentUser = null;
+    let studentId = null;
+    let allCourses = [];
+    let myRegistrations = [];
+    let classSchedule = [];
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', async function() {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        try {
+            // Get user data from token
+            const userData = localStorage.getItem('user') || sessionStorage.getItem('user');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                studentId = currentUser.id;
+                document.getElementById('userFullName').textContent = currentUser.full_name;
+                await loadDashboardData();
+                setupEventListeners();
+            } else {
+                window.location.href = 'login.html';
+            }
+        } catch (error) {
+            console.error('Initialization error:', error);
+            showAlert('Error loading dashboard data', 'error');
+        }
+    });
+
+    // Setup event listeners
+    function setupEventListeners() {
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Update active tab
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show corresponding section
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(`${tabId}-section`).classList.add('active');
+            });
+        });
+
+        // Logout button
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            window.location.href = 'login.html';
+        });
+    }
+
+    // Load all dashboard data
+    async function loadDashboardData() {
+        showLoading(true);
+        
+        try {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            
+            // Fetch all data
+            const [coursesRes, registrationsRes, scheduleRes] = await Promise.all([
+                fetch('/api/courses', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }),
+                fetch(`/api/registrations/student/${studentId}`, {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }),
+                fetch(`/api/schedule/student/${studentId}`, {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+            ]);
+
+            // Handle courses response
+            if (coursesRes.ok) {
+                const data = await coursesRes.json();
+                allCourses = data.courses || data || [];
+                populateCoursesTable();
+                updateAvailableCoursesCount();
+            } else {
+                const error = await coursesRes.json();
+                console.error('Failed to fetch courses:', error);
+                showAlert('Failed to load courses', 'error');
+            }
+
+            // Handle registrations response
+            if (registrationsRes.ok) {
+                const data = await registrationsRes.json();
+                myRegistrations = data.registrations || data || [];
+                populateMyCoursesTable();
+                updateRegisteredCoursesCount();
+            } else {
+                const error = await registrationsRes.json();
+                console.error('Failed to fetch registrations:', error);
+                showAlert('Failed to load your registrations', 'error');
+            }
+
+            // Handle schedule response
+            if (scheduleRes.ok) {
+                const data = await scheduleRes.json();
+                classSchedule = data.schedule || data || [];
+                populateScheduleTable();
+                updateTodaySchedule();
+            } else {
+                const error = await scheduleRes.json();
+                console.error('Failed to fetch schedule:', error);
+            }
+
+            // Update quick stats
+            updateNextClass();
+
+        } catch (error) {
+            console.error('Error loading data:', error);
+            showAlert('Failed to load dashboard data. Please try again.', 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // Populate available courses table
+    function populateCoursesTable() {
+        const tbody = document.querySelector('#coursesTable tbody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+
+        allCourses.forEach(course => {
+            const isRegistered = myRegistrations.some(reg => 
+                reg.course_id === course.id && reg.status === 'registered'
+            );
+            
+            const registeredCourse = myRegistrations.find(reg => 
+                reg.course_id === course.id
+            );
+            
+            const availableSeats = course.max_students - course.current_students;
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${course.course_code || ''}</td>
+                <td>${course.title || ''}</td>
+                <td>${course.instructor || ''}</td>
+                <td>${course.credits || 0}</td>
+                <td>${course.schedule || ''}</td>
+                <td>${availableSeats} / ${course.max_students}</td>
+                <td>
+                    ${isRegistered 
+                        ? '<span class="status-badge status-registered">Registered</span>'
+                        : `<button class="btn btn-primary btn-small register-btn" 
+                             data-course-id="${course.id}"
+                             ${availableSeats <= 0 ? 'disabled' : ''}>
+                            ${availableSeats <= 0 ? 'Full' : 'Register'}
+                           </button>`
+                    }
+                </td>
+            `;
+            
+            if (!isRegistered && availableSeats > 0) {
+                const registerBtn = row.querySelector('.register-btn');
+                if (registerBtn) {
+                    registerBtn.addEventListener('click', () => registerForCourse(course.id, course.course_code));
+                }
+            }
+            
+            tbody.appendChild(row);
+        });
+    }
+
+    // Populate my courses table
+    function populateMyCoursesTable() {
+        const tbody = document.querySelector('#myCoursesTable tbody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+
+        myRegistrations.forEach(registration => {
+            const course = allCourses.find(c => c.id === registration.course_id);
+            if (!course) return;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${course.course_code || ''}</td>
+                <td>${course.title || ''}</td>
+                <td>${course.instructor || ''}</td>
+                <td>
+                    <span class="status-badge ${registration.status === 'registered' ? 'status-registered' : 'status-dropped'}">
+                        ${registration.status ? registration.status.charAt(0).toUpperCase() + registration.status.slice(1) : 'Unknown'}
+                    </span>
+                </td>
+                <td>${registration.registration_date ? new Date(registration.registration_date).toLocaleDateString() : 'N/A'}</td>
+                <td>
+                    ${registration.status === 'registered'
+                        ? `<button class="btn btn-secondary btn-small drop-btn" 
+                             data-registration-id="${registration.id}"
+                             data-course-code="${course.course_code}">
+                            Drop Course
+                           </button>`
+                        : '<span>Dropped</span>'
+                    }
+                </td>
+            `;
+
+            if (registration.status === 'registered') {
+                const dropBtn = row.querySelector('.drop-btn');
+                if (dropBtn) {
+                    dropBtn.addEventListener('click', () => dropCourse(registration.id, course.course_code));
+                }
+            }
+
+            tbody.appendChild(row);
+        });
+    }
+
+    // Populate schedule table
+    function populateScheduleTable() {
+        const tbody = document.querySelector('#scheduleTable tbody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+
+        if (classSchedule.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td colspan="4" style="text-align: center; padding: 30px;">
+                    No classes scheduled. Register for courses to see your schedule.
+                </td>
+            `;
+            tbody.appendChild(row);
+            return;
+        }
+
+        classSchedule.forEach(schedule => {
+            const course = allCourses.find(c => c.id === schedule.course_id);
+            if (!course) return;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${course.course_code} - ${course.title}</td>
+                <td>${schedule.day_of_week}</td>
+                <td>${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}</td>
+                <td>${schedule.location || 'TBA'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Register for a course
+    async function registerForCourse(courseId, courseCode) {
+        try {
+            showLoading(true);
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            
+            const response = await fetch('/api/registrations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    course_id: courseId
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showAlert(`Successfully registered for ${courseCode}!`, 'success');
+                await loadDashboardData(); 
+            } else {
+                showAlert(result.error || 'Registration failed', 'error');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            showAlert('Failed to register. Please try again.', 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // Drop a course
+    async function dropCourse(registrationId, courseCode) {
+        if (!confirm(`Are you sure you want to drop ${courseCode}?`)) {
+            return;
+        }
+
+        try {
+            showLoading(true);
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            
+            const response = await fetch(`/api/registrations/${registrationId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showAlert(`Successfully dropped ${courseCode}!`, 'success');
+                await loadDashboardData(); 
+            } else {
+                showAlert(result.error || 'Failed to drop course', 'error');
+            }
+        } catch (error) {
+            console.error('Drop course error:', error);
+            showAlert('Failed to drop course. Please try again.', 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // Update today's schedule
+    function updateTodaySchedule() {
+        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+        const todayClasses = classSchedule.filter(s => s.day_of_week === today);
+        const scheduleDiv = document.getElementById('todaySchedule');
+        
+        if (!scheduleDiv) return;
+        
+        if (todayClasses.length === 0) {
+            scheduleDiv.innerHTML = '<p>No classes scheduled for today.</p>';
+            return;
+        }
+        
+        let scheduleHTML = '';
+        todayClasses.forEach(cls => {
+            const course = allCourses.find(c => c.id === cls.course_id);
+            if (course) {
+                scheduleHTML += `
+                    <p style="margin-bottom: 8px;">
+                        <strong>${course.course_code}:</strong> 
+                        ${formatTime(cls.start_time)} - ${formatTime(cls.end_time)} 
+                        at ${cls.location}
+                    </p>
+                `;
+            }
+        });
+        
+        scheduleDiv.innerHTML = scheduleHTML;
+    }
+
+    // Update available courses count
+    function updateAvailableCoursesCount() {
+        const availableCount = allCourses.filter(course => {
+            const isRegistered = myRegistrations.some(reg => 
+                reg.course_id === course.id && reg.status === 'registered'
+            );
+            const availableSeats = course.max_students - course.current_students;
+            return !isRegistered && availableSeats > 0;
+        }).length;
+        
+        const availableCountElement = document.getElementById('availableCount');
+        if (availableCountElement) {
+            availableCountElement.textContent = availableCount;
+        }
+    }
+
+    // Update registered courses count
+    function updateRegisteredCoursesCount() {
+        const registeredCount = myRegistrations.filter(reg => reg.status === 'registered').length;
+        const registeredCountElement = document.getElementById('registeredCount');
+        if (registeredCountElement) {
+            registeredCountElement.textContent = registeredCount;
+        }
+    }
+
+    // Update next class time
+    function updateNextClass() {
+        const now = new Date();
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const today = days[now.getDay()];
+        
+        let nextClass = null;
+        let minTimeDiff = Infinity;
+        
+        classSchedule.forEach(schedule => {
+            if (!schedule.start_time) return;
+            
+            const classTime = schedule.start_time.split(':');
+            const classMinutes = parseInt(classTime[0]) * 60 + parseInt(classTime[1]);
+            const dayIndex = days.indexOf(schedule.day_of_week);
+            const todayIndex = days.indexOf(today);
+            
+            if (dayIndex === -1) return;
+            
+            let dayDiff = dayIndex - todayIndex;
+            if (dayDiff < 0) dayDiff += 7;
+            if (dayDiff === 0 && classMinutes < currentTime) dayDiff = 7;
+            
+            const totalMinutes = dayDiff * 1440 + classMinutes;
+            const timeDiff = totalMinutes - (todayIndex * 1440 + currentTime);
+            
+            if (timeDiff > 0 && timeDiff < minTimeDiff) {
+                minTimeDiff = timeDiff;
+                nextClass = schedule;
+            }
+        });
+        
+        const nextClassTime = document.getElementById('nextClassTime');
+        if (nextClass && nextClassTime) {
+            const course = allCourses.find(c => c.id === nextClass.course_id);
+            nextClassTime.textContent = `${nextClass.day_of_week} at ${formatTime(nextClass.start_time)}`;
+        } else if (nextClassTime) {
+            nextClassTime.textContent = 'None scheduled';
+        }
+    }
+
+    // Utility functions
+    function formatTime(timeString) {
+        if (!timeString) return 'N/A';
+        const [hours, minutes] = timeString.split(':');
+        const hour = parseInt(hours);
+        if (isNaN(hour)) return timeString;
+        
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour % 12 || 12;
+        return `${displayHour}:${minutes} ${ampm}`;
+    }
+
+    function showAlert(message, type) {
+        const container = document.getElementById('alertContainer');
+        if (!container) return;
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.textContent = message;
+        container.appendChild(alertDiv);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode === container) {
+                container.removeChild(alertDiv);
+            }
+        }, 5000);
+    }
+
+    function showLoading(show) {
+        const spinner = document.getElementById('loadingSpinner');
+        if (spinner) {
+            spinner.style.display = show ? 'block' : 'none';
+        }
+    }
+    </script>
+</body>
+</html>
