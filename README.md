@@ -6,7 +6,8 @@ This web application allows students to register for courses and enables adminis
 ## 📸 Screenshots
 
 ### Home Page
-![Home Page](/screenshots/home.png)
+![Home Page](screenshots/home.png)
+
 
 
 ---
