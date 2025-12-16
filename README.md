@@ -1,4 +1,4 @@
-
+```md
 # Student Course Registration System
 
 A full-stack **Student Course Registration System** developed as part of my **Internship Project**.  
@@ -7,7 +7,7 @@ This web application allows students to register for courses and enables adminis
 ## 📸 Screenshots
 
 ### Home Page
-![Home Page](/../screenshots/home.png)
+![Home Page](/screenshots/home.png)
 
 
 ---
@@ -224,3 +224,4 @@ Internship Project – 2025
 This project is developed for **educational and internship purposes only**.
 
 ```
+
