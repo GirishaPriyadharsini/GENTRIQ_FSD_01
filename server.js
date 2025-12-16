@@ -468,7 +468,7 @@ app.put('/api/admin/courses/:id', authenticateToken, requireAdmin, async (req, r
   updated_at = CURRENT_TIMESTAMP
 WHERE id = ?
 `,
-            [course_code, title, description, instructor, department, credits, schedule, max_students, courseId]
+            [course_code, title, description, instructor, department, credits, max_students, courseId]
         );
         
         res.json({
@@ -793,6 +793,7 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
 
 
 
