@@ -408,10 +408,12 @@ app.post('/api/admin/courses', authenticateToken, requireAdmin, async (req, res)
         
         const [result] = await db.promise().query(
             `INSERT INTO courses (
-                course_code, title, description, instructor, 
-                department, credits, schedule, max_students
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [course_code, title, description, instructor, department, credits, schedule, max_students]
+  course_code, title, description, instructor,
+  department, credits, max_students
+)
+ VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [course_code, title, description, instructor, department, credits, max_students]
+
         );
         
         res.json({
@@ -460,11 +462,12 @@ app.put('/api/admin/courses/:id', authenticateToken, requireAdmin, async (req, r
         }
         
         await db.promise().query(
-            `UPDATE courses SET 
-                course_code = ?, title = ?, description = ?, instructor = ?,
-                department = ?, credits = ?, schedule = ?, max_students = ?,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?`,
+            `UPDATE courses SET
+  course_code = ?, title = ?, description = ?, instructor = ?,
+  department = ?, credits = ?, max_students = ?,
+  updated_at = CURRENT_TIMESTAMP
+WHERE id = ?
+`,
             [course_code, title, description, instructor, department, credits, schedule, max_students, courseId]
         );
         
@@ -790,5 +793,6 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
 
 
