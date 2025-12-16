@@ -5,7 +5,14 @@ This web application allows students to register for courses and enables adminis
 
 ## 📸 Screenshots
 
+### Home Page
 ![Home Page](screenshots/home.png)
+
+### Student dashboard Page
+![Student Page](screenshots/Studentdashboard.png)
+
+### Admin Dashboard Page
+![Admin Page](screenshots/admin.png)
 
 ---
 
