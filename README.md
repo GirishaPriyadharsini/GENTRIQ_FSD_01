@@ -147,8 +147,9 @@ PORT=3000
 ### 1️ Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/course-app.git
-cd course-app
+git clone https://github.com/GirishaPriyadharsini/GENTRIQ_FSD_01.git
+cd GENTRIQ_FSD_01
+
 ```
 
 ### 2️ Install Dependencies
