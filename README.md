@@ -134,9 +134,9 @@ Create a `.env` file in the root directory:
 ```env
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=
+DB_PASSWORD=your_db_password
 DB_NAME=course_registration
-SESSION_SECRET=course-registration-secret-key
+JWT_SECRET=your_jwt_secret
 PORT=3000
 ````
 
